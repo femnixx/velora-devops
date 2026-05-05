@@ -1,0 +1,34 @@
+# docker-compose.yml
+version: '3.9'
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: docker/dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development
+    depends_on:
+      - db:
+          condition: service_healthy
+    restart: unless-stopped
+  
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRESS_db: velora
+      POSTGRESS_USER: admin
+      POSTGRESS_PASSWORD: secret
+    volumes: 
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d velora"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  pgdata:
+
+# Start: docker compose up --build
+# Test curl http://localhost:8000/health
